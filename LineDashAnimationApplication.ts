@@ -1,6 +1,6 @@
 import { Canvas2DApplication } from "./core/Canvas2DApplication";
 import { CanvasMouseEvent } from "./core/event/CanvasMouseEvent";
-import { vec2 } from "./core/math2d";
+import { vec2, Rectangle, Math2D } from "./core/math2d";
 
 export class LineDashAnimationApplication extends Canvas2DApplication {
     private trans = false
@@ -8,6 +8,7 @@ export class LineDashAnimationApplication extends Canvas2DApplication {
     private _mouseX: number = 0
     private _mouseY: number = 0
     private _pattern: CanvasPattern | null = null
+    private _img !: HTMLImageElement;
 
     // 目的地坐标
     private destVec: vec2
@@ -26,11 +27,15 @@ export class LineDashAnimationApplication extends Canvas2DApplication {
     }
 
     public dispatchMouseDown(evt: CanvasMouseEvent): void {
-        if (evt.button == 2) {
-            console.log('move here')
-            this.destVec = evt.canvasPosition
+        if (this.isRunning()) {
+            if (evt.button == 2) {
+                console.log('move here')
+                this.destVec = evt.canvasPosition
+            }
         }
     }
+
+    private deg: number = 0
 
     public render(): void {
         if (this.context2D === null) { return }
@@ -38,16 +43,44 @@ export class LineDashAnimationApplication extends Canvas2DApplication {
         this.context2D.clearRect(0, 0, this.canvas.width, this.canvas.height)
         // this._updateLineDash()
         // this.strokeCoord(110, 110, this.canvas.width - 20, -100)
+        // this.fillPatternRect(10, 10, this.canvas.width - 20, this.canvas.height - 20, 'no-repeat')
         this.strokeGrid()
-        this.fillPatternRect(10, 10, this.canvas.width - 20, this.canvas.height - 20, 'no-repeat')
         this.drawCanvasCoordCenter()
-        this.doTransform()
         this.drawCoordInfo(`[${this._mouseX},${this._mouseY}]`, this._mouseX, this._mouseY)
+        this.deg = this.deg > 360 ? 0 : (this.deg + 1)
+        this.doTransform(this.deg)
     }
 
-    public doTransform(): void {
-        if (this.context2D === null) return
+    public doTransform(degree: number, rotateFirst: boolean = true): void {
+        if (!this.context2D) return
+        let radians: number = Math2D.toRadian(degree)
+        const origin: vec2 = new vec2(this.canvas.width * 0.5, this.canvas.height * 0.5)
+        this.context2D.save()
+        if (rotateFirst) {
+            this.context2D.rotate(radians)
+            this.context2D.translate(origin.x, origin.y)
+        } else {
+            this.context2D.translate(origin.x, origin.y)
+            this.context2D.rotate(radians)
+        }
+        this.fillRectWithTitle(0, 0, 100, 60, '+' + degree + '度旋转')
+        this.context2D.restore()
 
+        this.context2D.save()
+        if (rotateFirst) {
+            this.context2D.rotate(-radians)
+            this.context2D.translate(origin.x, origin.y)
+        } else {
+            this.context2D.translate(origin.x, origin.y)
+            this.context2D.rotate(-radians)
+        }
+        this.fillRectWithTitle(0, 0, 100, 60, '-' + degree + '度旋转')
+        this.context2D.restore()
+        let radius: number = this.distance(0, 0, origin.x, origin.y)
+        this.strokeCircle(0, 0, radius, 'black')
+    }
+    public doMouseTrack(): void {
+        if (this.context2D === null) return
         let width: number = 100
         let height: number = 60
 
@@ -74,109 +107,70 @@ export class LineDashAnimationApplication extends Canvas2DApplication {
         this.context2D.translate(this.curVec.x - (width * 0.5), this.curVec.y - (height * 0.5))
 
         this.fillRect(0, 0, width, height, '#336655')
-        this.fillText('奎因王', (width * 0.5)-15, (height * 0.5)-5, 'white')
+        this.fillText('奎因王', (width * 0.5) - 15, (height * 0.5) - 5, 'white')
 
         this.context2D.restore()
     }
 
-    public fillPatternRect(x: number, y: number, w: number, h: number,
-        repeat: Repeatition = 'repeat'): void {
-        if (this.context2D == null) return
-
-        if (!this._pattern) {
-            let img: HTMLImageElement = document.createElement('img') as HTMLImageElement
-            img.src = './assets/logo.jpg'
-            img.onload = (ev: Event) => {
-                if (this.context2D === null) return
-                this._pattern = this.context2D.createPattern(img, repeat)
-                this.context2D.save()
-                if (this._pattern !== null) {
-                    this.context2D.fillStyle = this._pattern
-                    this.context2D.beginPath()
-                    this.context2D.rect(x, y, w, h)
-                    this.context2D.fill()
-                }
-                this.context2D.restore()
-            }
-        } else {
-            this.context2D.save()
-            if (this._pattern !== null) {
-                this.context2D.fillStyle = this._pattern
-                this.context2D.beginPath()
-                this.context2D.rect(x, y, w, h)
-                this.context2D.fill()
-            }
-            this.context2D.restore()
+    public loadImage(): void {
+        if (this._img !== undefined) {
+            return
         }
 
-    }
-}
-
-type Repeatition = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat'
-class RenderState {
-    public lineWidth: number = 1;
-    public strokeStyle: string = 'red';
-    public fillStyle: string = 'green';
-
-    public clone(): RenderState {
-        let state: RenderState = new RenderState();
-        state.lineWidth = this.lineWidth;
-        state.strokeStyle = this.strokeStyle;
-        state.fillStyle = this.fillStyle;
-        return state;
+        let img: HTMLImageElement = document.createElement('img') as HTMLImageElement;
+        img.src = './assets/logo.png'
+        img.onload = (ev: Event): void => {
+            this._img = img
+        }
     }
 
-    public toString(): string {
-        return JSON.stringify(this, null, ' ');
-    }
-}
+    public testChangePartCanvasImageData(rRow: number = 2, rColum: number = 0, cRow: number = 1, cColum: number = 0, size: number = 32): void {
+        let colorCanvas: HTMLCanvasElement = this.getColorCanvas(size);
+        let context: CanvasRenderingContext2D | null = colorCanvas.getContext("2d");
 
-class RenderStateStack {
-    private _stack: RenderState[] = [new RenderState()];
-    private get _currentState(): RenderState {
-        return this._stack[this._stack.length - 1];
+        if (context === null) {
+            alert("Canvas获取渲染上下文失败！");
+            throw new Error("Canvas获取渲染上下文失败！");
+        }
+        this.setShadowState();
+        this.drawImage(colorCanvas,
+            Rectangle.create(300, 100, colorCanvas.width, colorCanvas.height));
+
+        let imgData: ImageData = context.createImageData(size, size);
+
+        let data: Uint8ClampedArray = imgData.data;
+        let rbgaCount: number = data.length / 4;
+
+        for (let i = 0; i < rbgaCount; i++) {
+            data[i * 4 + 0] = 255;
+            data[i * 4 + 1] = 0;
+            data[i * 4 + 2] = 0;
+            data[i * 4 + 3] = 255;
+        }
+
+        context.putImageData(imgData, size * rColum, size * rRow, 0, 0, size, size);
+        imgData = context.getImageData(size * cColum, size * cRow, size, size);
+        data = imgData.data;
+        let component: number = 0;
+        for (let i: number = 0; i < imgData.width; i++) {
+            for (let j: number = 0; j < imgData.height; j++) {
+                for (let k: number = 0; k < 4; k++) {
+                    let idx: number = (i * imgData.height + j) * 4 + k;
+                    component = data[idx];
+                    if (idx % 4 !== 3) {
+                        data[idx] = 255 - component;
+                    }
+                }
+            }
+        }
+        context.putImageData(imgData, size * cColum, size * cRow, 0, 0, size, size);
+        this.drawImage(colorCanvas,
+            Rectangle.create(300, 100, colorCanvas.width, colorCanvas.height));
     }
 
-    public save(): void {
-        this._stack.push(this._currentState.clone());
+
+    public isImgLoaded(): boolean {
+        return this._img !== undefined
     }
 
-    public restore(): void {
-        this._stack.pop();
-    }
-
-    public get lineWidth(): number {
-        return this._currentState.lineWidth;
-    }
-
-    public set lineWidth(value: number) {
-        this._currentState.lineWidth = value;
-    }
-
-    public get strokeStyle(): string {
-        return this._currentState.strokeStyle;
-    }
-
-    public set strokeStyle(value: string) {
-        this._currentState.strokeStyle = value;
-    }
-
-    public get fillStyle(): string {
-        return this._currentState.strokeStyle;
-    }
-
-    public set fillStyle(value: string) {
-        this._currentState.strokeStyle = value;
-    }
-
-    public printCurrentStateInfo(): void {
-        console.log(this._currentState.toString());
-    }
-}
-
-export enum EImageFillType {
-    STRETCH,
-    REPEAT,
-    REPEAT_X,
-    REPEAT_Y
 }
