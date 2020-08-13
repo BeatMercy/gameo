@@ -444,5 +444,97 @@ export class Canvas2DApplication extends Application {
             this.context2D.shadowOffsetY = shadowOffsetY;
         }
     }
+    public calcLocalTextRectangle(layout: ELayout, text: string, parentWidth: number, parentHeight: number): Rectangle {
+        let s: Size = this.calcTextSize(text);
+        let o: vec2 = vec2.create();
+        let left: number = 0;
+        let top: number = 0;
+        let right: number = parentWidth - s.width;
+        let bottom: number = parentHeight - s.height;
+        let center: number = right * 0.5;
+        let middle: number = bottom * 0.5;
+        switch (layout) {
+            case ELayout.LEFT_TOP: o.x = left; o.y = top; break;
+            case ELayout.RIGHT_TOP: o.x = right; o.y = top; break;
+            case ELayout.RIGHT_BOTTOM: o.x = right; o.y = bottom; break;
+            case ELayout.LEFT_BOTTOM: o.x = left; o.y = bottom; break;
+            case ELayout.CENTER_MIDDLE: o.x = center; o.y = middle; break;
+            case ELayout.CENTER_TOP: o.x = center; o.y = 0; break;
+            case ELayout.RIGHT_MIDDLE: o.x = right; o.y = middle; break;
+            case ELayout.CENTER_BOTTOM: o.x = center; o.y = bottom; break;
+            case ELayout.LEFT_MIDDLE: o.x = left; o.y = middle; break;
+        }
+        return new Rectangle(o, s);
+    }
+    public fillLocalRectWithTitle(
+        width: number, height: number, title: string = '',
+        referencePt: ELayout = ELayout.LEFT_TOP,
+        layout: ELayout = ELayout.CENTER_MIDDLE,
+        color: string = 'grey',
+        showCoord: boolean = true): void {
+        if (this.context2D == null) return
+
+        let x: number = 0;
+        let y: number = 0;
+
+        switch (referencePt) {
+            case ELayout.LEFT_TOP: x = 0; y = 0; break;
+            case ELayout.LEFT_MIDDLE: x = 0; y = - height * 0.5; break;
+            case ELayout.LEFT_BOTTOM: x = 0; y = - height; break;
+            case ELayout.RIGHT_TOP: x = - width; y = 0; break;
+            case ELayout.RIGHT_MIDDLE: x = - width; y = - height * 0.5; break;
+            case ELayout.RIGHT_BOTTOM: x = - width; y = - height; break;
+            case ELayout.CENTER_TOP: x = - width * 0.5; y = 0; break;
+            case ELayout.CENTER_MIDDLE: x = - width * 0.5; y = -height * 0.5; break;
+            case ELayout.CENTER_BOTTOM: x = - width * 0.5; y = -height; break;
+        }
+
+        this.context2D.save();
+        this.context2D.fillStyle = color;
+        this.context2D.beginPath();
+        this.context2D.rect(x, y, width, height);
+        this.context2D.fill();
+        if (title.length !== 0) {
+            let rect: Rectangle = this.calcLocalTextRectangle(layout, title, width, height);
+            this.fillText(title, x + rect.origin.x, y + rect.origin.y, 'white', 'left', 'top' /*, '10px sans-serif'*/);
+            this.strokeRect(x + rect.origin.x, y + rect.origin.y, rect.size.width, rect.size.height, 'rgba( 0 , 0 , 0 , 0.5 ) ');
+            this.fillCircle(x + rect.origin.x, y + rect.origin.y, 2);
+        }
+        if (showCoord) {
+            this.strokeCoord(0, 0, width + 20, height + 20);
+            this.fillCircle(0, 0, 3);
+        }
+
+        this.context2D.restore();
+    }
+    public fillLocalRectWithTitleUV(
+        width: number, height: number, title: string = '',
+        u: number = 0, v: number = 0,
+        layout: ELayout = ELayout.CENTER_MIDDLE,
+        color: string = 'grey',
+        showCoord: boolean = true): void {
+        if (this.context2D == null) return
+
+        let x: number = -width * u
+        let y: number = -width * v
+
+        this.context2D.save();
+        this.context2D.fillStyle = color;
+        this.context2D.beginPath();
+        this.context2D.rect(x, y, width, height);
+        this.context2D.fill();
+        if (title.length !== 0) {
+            let rect: Rectangle = this.calcLocalTextRectangle(layout, title, width, height);
+            this.fillText(title, x + rect.origin.x, y + rect.origin.y, 'white', 'left', 'top' /*, '10px sans-serif'*/);
+            this.strokeRect(x + rect.origin.x, y + rect.origin.y, rect.size.width, rect.size.height, 'rgba( 0 , 0 , 0 , 0.5 ) ');
+            this.fillCircle(x + rect.origin.x, y + rect.origin.y, 2);
+        }
+        if (showCoord) {
+            this.strokeCoord(0, 0, width + 20, height + 20);
+            this.fillCircle(0, 0, 3);
+        }
+
+        this.context2D.restore();
+    }
 
 }
