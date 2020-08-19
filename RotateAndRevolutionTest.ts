@@ -19,7 +19,8 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
     public update(elapsedMsec: number, intervalSec: number): void {
         const el: any = document.getElementById('rotateSpeed')
 
-        this._rotationSunSpeed += 2 //parseInt(el?.value || '60')
+        this._rotationSunSpeed = parseInt(el?.value || '60')
+        this.getCurImage()
         console.log('cur speed' + this._rotationSunSpeed)
         this._rotationMoon += this._rotationMoonSpeed * intervalSec
         this._rotationSun += this._rotationSunSpeed * intervalSec
@@ -52,5 +53,26 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
         this.context2D.restore()
     }
 
+    public getCurImage() {
+        const fileEl: HTMLInputElement = <HTMLInputElement>document.getElementById('imagefile')
+        if (fileEl.files) {
+            fileEl.files[0].arrayBuffer().then(buffer => {
+                const image = new Image();
+                console.log(buffer)
+                const blob = new Blob([buffer], { type: "image/jpeg" });
+                var urlCreator = window.URL || window.webkitURL;
+                var imageUrl = urlCreator.createObjectURL(blob);
+                const imgTag = <HTMLImageElement>document.getElementById("showcase")
+                imgTag.src =imageUrl
+            })
+            // var reader = new FileReader();
 
+            // reader.readAsDataURL(fileEl.files[0]);
+            // reader.onload = (e) => {
+            //     const image = new Image();
+            //     const imgData = <string>e.target?.result
+            //     image.src = imgData
+            // }
+        }
+    }
 }
