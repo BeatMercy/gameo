@@ -1,5 +1,6 @@
 import { Canvas2DApplication } from "./core/Canvas2DApplication"
 import { Math2D } from "./core/math2d"
+import ImageUtil from "./core/util/imageUtil"
 
 export class RotateAndRevolutionTest extends Canvas2DApplication {
     private _rotationSunSpeed: number = 60
@@ -54,25 +55,41 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
     }
 
     public getCurImage() {
-        const fileEl: HTMLInputElement = <HTMLInputElement>document.getElementById('imagefile')
-        if (fileEl.files) {
-            fileEl.files[0].arrayBuffer().then(buffer => {
-                const image = new Image();
-                console.log(buffer)
-                const blob = new Blob([buffer], { type: "image/jpeg" });
-                var urlCreator = window.URL || window.webkitURL;
-                var imageUrl = urlCreator.createObjectURL(blob);
-                const imgTag = <HTMLImageElement>document.getElementById("showcase")
-                imgTag.src =imageUrl
-            })
-            // var reader = new FileReader();
+        const logoImg = new Image()
+        logoImg.crossOrigin = 'Anonymous'
+        logoImg.src = '/assets/logo.jpg'
 
-            // reader.readAsDataURL(fileEl.files[0]);
-            // reader.onload = (e) => {
-            //     const image = new Image();
-            //     const imgData = <string>e.target?.result
-            //     image.src = imgData
-            // }
-        }
+        ImageUtil.imageToArrayBuffer(logoImg.src, (blob: ArrayBuffer) => {
+            console.log(blob)
+
+
+        })
+        // logoImg.onload = (loadEvent: Event) => {
+        //     // 此时img 加载完毕可饮用img属性
+        //     logoImg.width
+        //     logoImg.height
+        //     console.log(logoImg.dataset);
+
+        // }
+        // const fileEl: HTMLInputElement = <HTMLInputElement>document.getElementById('imagefile')
+        // if (fileEl.files) {
+        //     fileEl.files[0].arrayBuffer().then(buffer => {
+        //         const image = new Image();
+        //         console.log(buffer)
+        //         const blob = new Blob([buffer], { type: "image/jpeg" });
+        //         var urlCreator = window.URL || window.webkitURL;
+        //         var imageUrl = urlCreator.createObjectURL(blob);
+        //         const imgTag = <HTMLImageElement>document.getElementById("showcase")
+        //         imgTag.src =imageUrl
+        //     })
+        //     // var reader = new FileReader();
+
+        //     // reader.readAsDataURL(fileEl.files[0]);
+        //     // reader.onload = (e) => {
+        //     //     const image = new Image();
+        //     //     const imgData = <string>e.target?.result
+        //     //     image.src = imgData
+        //     // }
+        // }
     }
 }
