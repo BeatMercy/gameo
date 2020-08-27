@@ -6,7 +6,7 @@ export default class ImageUtil {
         return canvas.toDataURL(format, quality)
     }
     // DataURL转canvas
-    public static dataURLToCanvas(dataurl: string, cb: Function) {
+    public static dataURLToCanvas(dataurl: string, cb: (canvas: HTMLCanvasElement) => void) {
         var canvas = <HTMLCanvasElement>document.createElement('CANVAS')
         var ctx = canvas.getContext('2d')
         var img = new Image()
@@ -20,7 +20,7 @@ export default class ImageUtil {
     }
 
     // image转canvas：图片地址
-    public static imageToCanvas(src: string, cb: Function) {
+    public static imageToCanvas(src: string, cb: (canvas: HTMLCanvasElement) => void) {
         var canvas = <HTMLCanvasElement>document.createElement('CANVAS')
         var ctx = canvas.getContext('2d')
         var img = new Image()
@@ -41,7 +41,7 @@ export default class ImageUtil {
     }
 
     // File/Blob对象转DataURL
-    public static fileOrBlobToDataURL(blobObj: Blob, cb: Function) {
+    public static fileOrBlobToDataURL(blobObj: Blob, cb: (dataurl: string) => void) {
         var a = new FileReader()
         a.readAsDataURL(blobObj)
         a.onload = function (e: any) {
@@ -61,7 +61,7 @@ export default class ImageUtil {
         return new Blob([u8arr], { type: mime })
     }
 
-    public static dataURLToArrayBuffer(dataurl: string): ArrayBuffer {
+    public static dataURLToUint8Array(dataurl: string): Uint8Array {
         var arr = dataurl.split(',')
         var bstr = atob(arr[1])
         var n = bstr.length
@@ -72,7 +72,7 @@ export default class ImageUtil {
         return u8arr
     }
     // Blob转image
-    public static blobToImage(blob: Blob, cb: Function) {
+    public static blobToImage(blob: Blob, cb: (target: any) => void) {
         ImageUtil.fileOrBlobToDataURL(blob, function (dataurl: string) {
             var img = new Image()
             img.src = dataurl
@@ -85,13 +85,13 @@ export default class ImageUtil {
             cb(ImageUtil.dataURLToBlob(ImageUtil.canvasToDataURL(canvas)))
         })
     }
-    public static imageToArrayBuffer(src: string, cb: (blob: ArrayBuffer) => any): void {
+    public static imageToUint8Array(src: string, cb: (array: Uint8Array) => any): void {
         ImageUtil.imageToCanvas(src, function (canvas: HTMLCanvasElement) {
-            cb(ImageUtil.dataURLToArrayBuffer(ImageUtil.canvasToDataURL(canvas)))
+            cb(ImageUtil.dataURLToUint8Array(ImageUtil.canvasToDataURL(canvas)))
         })
     }
     // Blob转canvas
-    public static BlobToCanvas(blob: Blob, cb: Function) {
+    public static BlobToCanvas(blob: Blob, cb: (canvas: HTMLCanvasElement) => void) {
         ImageUtil.fileOrBlobToDataURL(blob, function (dataurl: string) {
             ImageUtil.dataURLToCanvas(dataurl, cb)
         })
