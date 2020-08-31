@@ -1,7 +1,5 @@
 import { Canvas2DApplication } from "./core/Canvas2DApplication"
 import { Math2D } from "./core/math2d"
-import ImageUtil from "./core/util/imageUtil"
-
 export class RotateAndRevolutionTest extends Canvas2DApplication {
     private _rotationSunSpeed: number = 60
     private _rotationMoonSpeed: number = 500
