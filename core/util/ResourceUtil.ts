@@ -24,6 +24,16 @@ export default class ResourceUtil {
             }
         })
     }
+    
+    public static loadImageAsCanvas(path: string): Promise<HTMLCanvasElement> {
+        return new Promise((resolve, reject) => {
+            try {
+                ImageUtil.dataURLToCanvas(path, (imageCanvas) => { resolve(imageCanvas) })
+            } catch (ex) {
+                reject(ex)
+            }
+        })
+    }
 
     public static loadAllImages(): Promise<Array<HTMLImageElement>> {
         return this.loadAllImagesSeparately()
@@ -52,6 +62,35 @@ export default class ResourceUtil {
                             resolve(images)
                         }
                     })
+            } catch (ex) {
+                reject(ex)
+            }
+        })
+    }
+    public static loadAllImagesSeparatelyAsCanvas(preHandler?: (imageCanvas: HTMLCanvasElement) => void): Promise<Array<HTMLCanvasElement>> {
+        const canvases: Array<HTMLCanvasElement> = new Array<HTMLCanvasElement>()
+        return new Promise((resolve, reject) => {
+            try {
+                const startTime = new Date().getTime()
+                let perLoadTime = startTime
+                let loadedCount = 0
+                this.imageList.forEach((imgPath, index) =>
+                    ImageUtil.dataURLToCanvas(imgPath,
+                        (canvas) => {
+                            loadedCount++
+                            if (preHandler) {
+                                const curLoadTime = new Date().getTime()
+                                console.info(`Single [${index}] Loaded Cost : ${(perLoadTime - perLoadTime) / 1000}s`)
+                                perLoadTime = curLoadTime
+                                preHandler(canvas)
+                            }
+                            if (loadedCount >= this.imageList.length) {
+                                const endTime = new Date().getTime()
+                                console.info(`All canvases Resource Loaded Cost : ${(endTime - startTime) / 1000}s`)
+                                resolve(canvases)
+                            }
+                        })
+                )
             } catch (ex) {
                 reject(ex)
             }
