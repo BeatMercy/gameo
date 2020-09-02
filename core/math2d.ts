@@ -2,91 +2,91 @@ const EPSILON: number = 0.00001;
 const PiBy180: number = 0.017453292519943295;
 
 export class Math2D {
-    public static toRadian ( degree : number ) : number {
-        return degree * PiBy180 ;
+    public static toRadian(degree: number): number {
+        return degree * PiBy180;// 1° = (π/180)rad ≈ 0.01745rad
     }
 
-    public static toDegree ( radian : number ) : number {
-        return radian / PiBy180 ;
+    public static toDegree(radian: number): number {
+        return radian / PiBy180;
     }
 
-    public static random ( from : number , to : number ) : number {
-        return Math .random ( ) * to  + from ;
+    public static random(from: number, to: number): number {
+        return Math.random() * to + from;
     }
 
-    public static angleSubtract ( from : number , to : number ) : number {
-        let diff : number = to - from ;
-        while ( diff > 180 ) {
-            diff -= 360 ;
+    public static angleSubtract(from: number, to: number): number {
+        let diff: number = to - from;
+        while (diff > 180) {
+            diff -= 360;
         }
 
-        while ( diff < - 180 ) {
-            diff += 360 ;
+        while (diff < - 180) {
+            diff += 360;
         }
 
-        return diff ;
+        return diff;
     }
 
-    public static isEquals ( left : number , right : number , espilon : number = EPSILON ) : boolean {
-        if ( Math . abs ( left - right ) >= EPSILON ) {
-            return false ;
+    public static isEquals(left: number, right: number, espilon: number = EPSILON): boolean {
+        if (Math.abs(left - right) >= EPSILON) {
+            return false;
         }
-        return true ;
+        return true;
     }
 
-    public static getQuadraticBezierPosition ( start : number , ctrl : number , end: number , t : number ) : number {
-        if ( t < 0.0 || t > 1.0 ) {
-            alert ( " t的取值范围必须为[ 0 , 1 ] " ) ;
-            throw new Error ( " t的取值范围必须为[ 0 , 1 ] " ) ;
+    public static getQuadraticBezierPosition(start: number, ctrl: number, end: number, t: number): number {
+        if (t < 0.0 || t > 1.0) {
+            alert(" t的取值范围必须为[ 0 , 1 ] ");
+            throw new Error(" t的取值范围必须为[ 0 , 1 ] ");
         }
-        let t1 : number = 1.0 - t ;
-        let t2 : number = t1 * t1 ;
-        return t2 * start + 2.0 * t * t1 * ctrl + t * t * end ;
-    } 
-
-    public static getQuadraticBezierVector ( start : vec2 , ctrl : vec2 , end : vec2 , t : number , result : vec2 | null = null ) : vec2 {
-        if ( result === null ) result = vec2 . create ( ) ;
-        result . x = Math2D . getQuadraticBezierPosition ( start . x , ctrl . x , end . x , t ) ;
-        result . y = Math2D . getQuadraticBezierPosition ( start . y , ctrl . y , end . y , t ) ;
-        return result ; 
+        let t1: number = 1.0 - t;
+        let t2: number = t1 * t1;
+        return t2 * start + 2.0 * t * t1 * ctrl + t * t * end;
     }
 
-    public static getQuadraticBezierMat (  start : vec2 , ctrl : vec2 , end : vec2 , t : number , result : vec2 | null = null ) : vec2 {
-        if ( result === null ) result = vec2 . create ( ) ;
-         
-        return result ;
+    public static getQuadraticBezierVector(start: vec2, ctrl: vec2, end: vec2, t: number, result: vec2 | null = null): vec2 {
+        if (result === null) result = vec2.create();
+        result.x = Math2D.getQuadraticBezierPosition(start.x, ctrl.x, end.x, t);
+        result.y = Math2D.getQuadraticBezierPosition(start.y, ctrl.y, end.y, t);
+        return result;
     }
 
-    public static getCubicBezierPosition ( start : number , ctrl0 : number , ctrl1 : number , end : number , t : number ) : number {
-        if ( t < 0.0 || t > 1.0 ) {
-            alert ( " t的取值范围必须为[ 0 , 1 ] " ) ;
-            throw new Error ( " t的取值范围必须为[ 0 , 1 ] " ) ;
+    public static getQuadraticBezierMat(start: vec2, ctrl: vec2, end: vec2, t: number, result: vec2 | null = null): vec2 {
+        if (result === null) result = vec2.create();
+
+        return result;
+    }
+
+    public static getCubicBezierPosition(start: number, ctrl0: number, ctrl1: number, end: number, t: number): number {
+        if (t < 0.0 || t > 1.0) {
+            alert(" t的取值范围必须为[ 0 , 1 ] ");
+            throw new Error(" t的取值范围必须为[ 0 , 1 ] ");
         }
-        let t1 : number = ( 1.0 - t ) ;
-        let t2 : number = t * t ;
-        let t3 : number = t2 * t ;
-        return ( t1 * t1 * t1 ) * start + 3 * t * ( t1 * t1 )  * ctrl0 +  ( 3 * t2 * t1 ) * ctrl1 + t3 * end ;
+        let t1: number = (1.0 - t);
+        let t2: number = t * t;
+        let t3: number = t2 * t;
+        return (t1 * t1 * t1) * start + 3 * t * (t1 * t1) * ctrl0 + (3 * t2 * t1) * ctrl1 + t3 * end;
     }
 
-    public static getCubicBezierVector ( start : vec2 , ctrl0 : vec2 , ctrl1 : vec2 , end : vec2 , t : number , result : vec2 | null = null ) : vec2 {
-        if ( result === null ) result = vec2 . create ( ) ;
-        result . x = Math2D . getCubicBezierPosition ( start . x , ctrl0 . x , ctrl1 . x , end . x , t ) ;
-        result . y = Math2D . getCubicBezierPosition ( start . y , ctrl0 . y , ctrl1 . y , end . y , t ) ;
-        return result ; 
+    public static getCubicBezierVector(start: vec2, ctrl0: vec2, ctrl1: vec2, end: vec2, t: number, result: vec2 | null = null): vec2 {
+        if (result === null) result = vec2.create();
+        result.x = Math2D.getCubicBezierPosition(start.x, ctrl0.x, ctrl1.x, end.x, t);
+        result.y = Math2D.getCubicBezierPosition(start.y, ctrl0.y, ctrl1.y, end.y, t);
+        return result;
     }
 
-    public static isPointInRect ( ptX : number , ptY : number , x : number , y : number , w : number , h : number ) : boolean {
-        if ( ptX >= x && ptX <= x + w && ptY >= y && ptY <= y + h ) {
-            return true ;
+    public static isPointInRect(ptX: number, ptY: number, x: number, y: number, w: number, h: number): boolean {
+        if (ptX >= x && ptX <= x + w && ptY >= y && ptY <= y + h) {
+            return true;
         }
-        return false ;
+        return false;
     }
-    
-    public static isPointInEllipse ( ptX : number , ptY : number , centerX : number , centerY : number , radiusX : number , radiusY : number ) : boolean {
-        let diffX = ptX - centerX ;
-        let diffY = ptY - centerY ;
-        let n : number = ( diffX * diffX ) / ( radiusX * radiusX ) + ( diffY * diffY ) / ( radiusY * radiusY ) ;
-        return n <= 1.0 ;
+
+    public static isPointInEllipse(ptX: number, ptY: number, centerX: number, centerY: number, radiusX: number, radiusY: number): boolean {
+        let diffX = ptX - centerX;
+        let diffY = ptY - centerY;
+        let n: number = (diffX * diffX) / (radiusX * radiusX) + (diffY * diffY) / (radiusY * radiusY);
+        return n <= 1.0;
     }
 
 
@@ -158,12 +158,12 @@ export class Rectangle {
         this.size = size
     }
 
-    public isEmpty ( ) : boolean {
-        let area : number = this . size . width * this . size . height ;
-        if ( Math2D . isEquals ( area , 0 ) === true ) {
-            return true ;
+    public isEmpty(): boolean {
+        let area: number = this.size.width * this.size.height;
+        if (Math2D.isEquals(area, 0) === true) {
+            return true;
         } else {
-            return false ;
+            return false;
         }
     }
 

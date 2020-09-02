@@ -14,7 +14,7 @@ canvas2d.drawText('Mercys Word')
 function timerCallback(id: number, data: string): void {
     console.log('当前调用的timer id: ' + id + ' data : ' + data)
 }
-ResourceUtil.loadImageAsCanvas('/assets/3.png')
+ResourceUtil.loadImageAsCanvas('/assets/logo.jpg')
     .then(target => {
         let app: Canvas2DApplication = new RotateAndRevolutionTest(canvas, target)
         let timer0: number = app.addTimer(timerCallback, 3, true, ' data is timerCallback 的数据 ')

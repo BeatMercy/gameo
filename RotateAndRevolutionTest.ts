@@ -32,7 +32,6 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
         const el: any = document.getElementById('rotateSpeed')
 
         this._revolutionSpeed += parseInt(el?.value || '60')
-        console.log('cur speed' + this._rotationSunSpeed)
         this._rotationMoon += this._rotationMoonSpeed * intervalSec
         this._rotationSun += this._rotationSunSpeed * intervalSec
         this._revolution += this._revolutionSpeed * intervalSec
@@ -55,7 +54,7 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
         this.context2D.save()
         this.context2D.rotate(revolution)
         const s = new Date().getTime()
-        const dd = this.changeImag()
+        const dd = this.changeImag(revolution)
         const e = (new Date().getTime() - s) / 1000
         console.log(e)
 
@@ -73,14 +72,32 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
         this.context2D.restore()
     }
 
-    private changeImag(): HTMLCanvasElement {
+    private changeImag(degree: number): HTMLCanvasElement {
         const imgData = this._targetContext.getImageData(0, 0, this._targetCanvas.width, this._targetCanvas.height)
-        var average = 0;
-        for (var i = 0; i < imgData.data.length; i += 4) {
-            const seed = parseInt('' + Math.random() * 256)
-            average = Math.floor((imgData.data[seed] + imgData.data[seed + 1] + imgData.data[seed + 2]) / 3);  //将红、绿、蓝色值求平均值后得到灰度值
-            imgData.data[i] = imgData.data[seed + 1] = imgData.data[seed + 2]; // 将每个像素点的色值重写
+        const radian = Math2D.toRadian(degree)
+        const radius = 200
+        const colorIndexs = new Array<number>()
+        for (var r = 0; r < radius; r++) {
+            const xPixel = parseInt((Math.cos(radian) * radius).toString())
+            const yPixel = parseInt((Math.sin(radian) * radius).toString())
+            const yIndex = yPixel * (imgData.width * 4)
+            const locationIndex = yIndex + (xPixel * 4)
+            colorIndexs.push(locationIndex)
+            colorIndexs.push(locationIndex + 1)
+            colorIndexs.push(locationIndex + 2)
+            colorIndexs.push(locationIndex + 3)
+
         }
+        // console.log('length in color',imgData.data.length)
+        // console.log('length in pixel',imgData.data.length / 4)
+        // console.log('square',imgData.height * imgData.width)
+        for (let index = 0; index < imgData.data.length; index++) {
+            if (colorIndexs.indexOf(index) === -1) {
+                imgData.data[index] = 0
+            }
+
+        }
+
         this._targetContext.putImageData(imgData, 0, 0)
         return this._targetContext.canvas
     }
