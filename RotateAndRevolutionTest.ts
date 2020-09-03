@@ -19,7 +19,6 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
         // 加载图片
         this._targetCanvas = target
         this._targetContext = <CanvasRenderingContext2D>target.getContext('2d')
-        console.log(this._targetContext.getImageData(0, 0, target.width, canvas.height))
     }
 
     public render(): void {
@@ -31,7 +30,7 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
     public update(elapsedMsec: number, intervalSec: number): void {
         const el: any = document.getElementById('rotateSpeed')
 
-        this._revolutionSpeed += parseInt(el?.value || '60')
+        this._revolutionSpeed = parseInt(el?.value || '1')
         this._rotationMoon += this._rotationMoonSpeed * intervalSec
         this._rotationSun += this._rotationSunSpeed * intervalSec
         this._revolution += this._revolutionSpeed * intervalSec
@@ -48,19 +47,15 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
         this.context2D.save()
         this.context2D.translate(this.canvas.width * 0.5, this.canvas.height * 0.5)
 
-        const targetWidth = 400//this._targetCanvas.width
-        const targetHeight = 400//this._targetCanvas.height
-
-        this.context2D.save()
-        this.context2D.rotate(revolution)
+        // this.context2D.rotate(revolution)
         const s = new Date().getTime()
-        const dd = this.changeImag(revolution)
-        const e = (new Date().getTime() - s) / 1000
-        console.log(e)
+        const afterRendered = this.changeImag(this._revolution)
+        const gapTime = (new Date().getTime() - s) / 1000
+        console.log(gapTime)
 
-        this.context2D.drawImage(dd,
-            -(targetHeight / 2), -(targetHeight / 2),
-            targetWidth, targetHeight)
+        const targetWidth = this._targetCanvas.width
+        const targetHeight = this._targetCanvas.height
+        this.context2D.drawImage(afterRendered, -(targetWidth / 2), -(targetHeight / 2), targetWidth, targetHeight)
         this.context2D.restore()
 
         // this.context2D.save()
@@ -69,36 +64,34 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
         // this.context2D.drawImage(this._targetCanvas, 80, 80, 200, 200)
         // this.context2D.restore()
 
-        this.context2D.restore()
     }
 
     private changeImag(degree: number): HTMLCanvasElement {
         const imgData = this._targetContext.getImageData(0, 0, this._targetCanvas.width, this._targetCanvas.height)
         const radian = Math2D.toRadian(degree)
-        const radius = 200
-        const colorIndexs = new Array<number>()
-        for (var r = 0; r < radius; r++) {
-            const xPixel = parseInt((Math.cos(radian) * radius).toString())
-            const yPixel = parseInt((Math.sin(radian) * radius).toString())
+        const radius = 160
+        const colorIndexs = new Set<number>()
+        const centerLocationIndex = (imgData.data.length >>> 1) + (imgData.width * 2)
+        for (let r = -radius; r < radius; r++) {
+            const xPixel = parseInt((r * Math.cos(radian)).toString())
+            const yPixel = parseInt((r * Math.sin(radian)).toString())
             const yIndex = yPixel * (imgData.width * 4)
-            const locationIndex = yIndex + (xPixel * 4)
-            colorIndexs.push(locationIndex)
-            colorIndexs.push(locationIndex + 1)
-            colorIndexs.push(locationIndex + 2)
-            colorIndexs.push(locationIndex + 3)
-
-        }
-        // console.log('length in color',imgData.data.length)
-        // console.log('length in pixel',imgData.data.length / 4)
-        // console.log('square',imgData.height * imgData.width)
-        for (let index = 0; index < imgData.data.length; index++) {
-            if (colorIndexs.indexOf(index) === -1) {
-                imgData.data[index] = 0
+            const locationIndex = centerLocationIndex + yIndex + (xPixel * 4)
+            for (let o = -50; o < 50; o++) {
+                colorIndexs.add(locationIndex + o)
             }
-
         }
-
-        this._targetContext.putImageData(imgData, 0, 0)
-        return this._targetContext.canvas
+        for (let index = 0; index < imgData.data.length; index += 4) {
+            if (!colorIndexs.has(index)) {
+                imgData.data[index]
+                    = imgData.data[index + 1]
+                    = imgData.data[index + 2] = 255
+            }
+        }
+        const tempContext = <CanvasRenderingContext2D>document.createElement('canvas').getContext('2d')
+        tempContext.canvas.width = imgData.width
+        tempContext.canvas.height = imgData.height
+        tempContext.putImageData(imgData, 0, 0)
+        return tempContext.canvas
     }
 }
