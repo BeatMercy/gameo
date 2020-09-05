@@ -24,7 +24,7 @@ export default class ResourceUtil {
             }
         })
     }
-    
+
     public static loadImageAsCanvas(path: string): Promise<HTMLCanvasElement> {
         return new Promise((resolve, reject) => {
             try {
@@ -95,5 +95,21 @@ export default class ResourceUtil {
                 reject(ex)
             }
         })
+    }
+    public static loadVideo(path: string): Promise<HTMLVideoElement> {
+        return new Promise((resolve, reject) => {
+            try {
+                const videoEl: HTMLVideoElement = document.createElement('video')
+                videoEl.muted = true
+                videoEl.src = path
+                videoEl.preload = 'metadata'
+                videoEl.onloadedmetadata = () => {
+                    resolve(videoEl)
+                }
+            } catch (ex) {
+                reject(ex)
+            }
+        })
+
     }
 }

@@ -12,13 +12,29 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
     private _revolution: number = 0
 
     private _targetCanvas: HTMLCanvasElement
+    private _targetVideo: HTMLVideoElement
     private _targetContext: CanvasRenderingContext2D
 
-    public constructor(canvas: HTMLCanvasElement, target: HTMLCanvasElement) {
+    public constructor(canvas: HTMLCanvasElement, target: HTMLCanvasElement | HTMLVideoElement) {
         super(canvas)
         // 加载图片
-        this._targetCanvas = target
-        this._targetContext = <CanvasRenderingContext2D>target.getContext('2d')
+        if (target instanceof HTMLCanvasElement) {
+            this._targetCanvas = target
+            this._targetContext = <CanvasRenderingContext2D>target.getContext('2d')
+        } else if (target instanceof HTMLVideoElement) {
+            this._targetVideo = target
+        }
+    }
+
+    public start() {
+        super.start()
+        if (this._targetVideo)
+            this._targetVideo.play()
+    }
+    public stop() {
+        super.stop()
+        if (this._targetVideo)
+            this._targetVideo.pause()
     }
 
     public render(): void {
@@ -49,12 +65,15 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
 
         // this.context2D.rotate(revolution)
         const s = new Date().getTime()
-        const afterRendered = this.changeImag(this._revolution)
+
+        const afterRendered: HTMLCanvasElement = this._targetVideo
+            ? this.videoImage(this._revolution)
+            : this.changeImag(this._revolution)
         const gapTime = (new Date().getTime() - s) / 1000
         console.log(gapTime)
 
-        const targetWidth = this._targetCanvas.width
-        const targetHeight = this._targetCanvas.height
+        const targetWidth = afterRendered.width
+        const targetHeight = afterRendered.height
         this.context2D.drawImage(afterRendered, -(targetWidth / 2), -(targetHeight / 2), targetWidth, targetHeight)
         this.context2D.restore()
 
@@ -66,10 +85,13 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
 
     }
 
-    private changeImag(degree: number): HTMLCanvasElement {
-        const imgData = this._targetContext.getImageData(0, 0, this._targetCanvas.width, this._targetCanvas.height)
+    private changeImag(degree: number, imageTargetContext?: CanvasRenderingContext2D): HTMLCanvasElement {
+        if (!imageTargetContext) {
+            imageTargetContext = this._targetContext
+        }
+        const imgData = imageTargetContext.getImageData(0, 0, imageTargetContext.canvas.width, imageTargetContext.canvas.height)
         const radian = Math2D.toRadian(degree)
-        const radius = 160
+        const radius = 200
         const colorIndexs = new Set<number>()
         const centerLocationIndex = (imgData.data.length >>> 1) + (imgData.width * 2)
         for (let r = -radius; r < radius; r++) {
@@ -77,21 +99,28 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
             const yPixel = parseInt((r * Math.sin(radian)).toString())
             const yIndex = yPixel * (imgData.width * 4)
             const locationIndex = centerLocationIndex + yIndex + (xPixel * 4)
-            for (let o = -50; o < 50; o++) {
+            for (let o = -100; o < 100; o++) {
                 colorIndexs.add(locationIndex + o)
             }
         }
-        for (let index = 0; index < imgData.data.length; index += 4) {
-            if (!colorIndexs.has(index)) {
-                imgData.data[index]
-                    = imgData.data[index + 1]
-                    = imgData.data[index + 2] = 255
-            }
-        }
+        // for (let index = 0; index < imgData.data.length; index += 4) {
+        //     if (!!colorIndexs.has(index)) {
+        //         imgData.data[index]
+        //             = imgData.data[index + 1]
+        //             = imgData.data[index + 2] = 255
+        //     }
+        // }
         const tempContext = <CanvasRenderingContext2D>document.createElement('canvas').getContext('2d')
         tempContext.canvas.width = imgData.width
         tempContext.canvas.height = imgData.height
         tempContext.putImageData(imgData, 0, 0)
         return tempContext.canvas
+    }
+    private videoImage(degree: number): HTMLCanvasElement {
+        const tempContext = <CanvasRenderingContext2D>document.createElement('canvas').getContext('2d')
+        tempContext.canvas.width = this._targetVideo.videoWidth
+        tempContext.canvas.height = this._targetVideo.videoHeight
+        tempContext.drawImage(this._targetVideo, 0, 0, this._targetVideo.videoWidth, this._targetVideo.videoHeight);
+        return this.changeImag(degree, tempContext)
     }
 }
