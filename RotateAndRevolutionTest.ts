@@ -1,4 +1,3 @@
-import { Canvas2D } from "./core/Canvas2D"
 import { Canvas2DApplication } from "./core/Canvas2DApplication"
 import { Math2D } from "./core/math2d"
 
@@ -103,13 +102,13 @@ export class RotateAndRevolutionTest extends Canvas2DApplication {
                 colorIndexs.add(locationIndex + o)
             }
         }
-        // for (let index = 0; index < imgData.data.length; index += 4) {
-        //     if (!!colorIndexs.has(index)) {
-        //         imgData.data[index]
-        //             = imgData.data[index + 1]
-        //             = imgData.data[index + 2] = 255
-        //     }
-        // }
+        for (let index = 0; index < imgData.data.length; index += 4) {
+            if (!!colorIndexs.has(index)) {
+                imgData.data[index]
+                    = imgData.data[index + 1]
+                    = imgData.data[index + 2] = 255
+            }
+        }
         const tempContext = <CanvasRenderingContext2D>document.createElement('canvas').getContext('2d')
         tempContext.canvas.width = imgData.width
         tempContext.canvas.height = imgData.height

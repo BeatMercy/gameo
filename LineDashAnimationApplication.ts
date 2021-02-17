@@ -1,4 +1,5 @@
 import { Canvas2DApplication } from "./core/Canvas2DApplication";
+import { CanvasKeyBoardEvent } from "./core/event/CanvasKeyBoardEvent";
 import { CanvasMouseEvent } from "./core/event/CanvasMouseEvent";
 import { vec2, Rectangle, Math2D } from "./core/math2d";
 
@@ -11,14 +12,58 @@ export class LineDashAnimationApplication extends Canvas2DApplication {
     private _img !: HTMLImageElement;
 
     // 目的地坐标
+    _targetCanvas: HTMLCanvasElement
+    private _targetContext: CanvasRenderingContext2D
     private destVec: vec2
     private curVec: vec2
 
-    public constructor(canvas: HTMLCanvasElement) {
+    // 移动状态
+    private moveStatus = { up: false, down: false, left: false, right: false }
+
+    public constructor(canvas: HTMLCanvasElement, target: HTMLCanvasElement) {
         super(canvas)
+        if (target instanceof HTMLCanvasElement) {
+            this._targetCanvas = target
+            this._targetContext = <CanvasRenderingContext2D>target.getContext('2d')
+        }
+
         this.isSupportMouseMove = true
         this.destVec = new vec2(this.canvas.width * 0.5, this.canvas.height * 0.5)
         this.curVec = new vec2(this.canvas.width * 0.5, this.canvas.height * 0.5)
+    }
+
+    public dispatchKeyDown(keydown: CanvasKeyBoardEvent) {
+        switch (keydown.key) {
+            case 'ArrowUp':
+                this.moveStatus.up = true
+                break;
+            case 'ArrowDown':
+                this.moveStatus.down = true
+                break;
+            case 'ArrowLeft':
+                this.moveStatus.left = true
+                break;
+            case 'ArrowRight':
+                this.moveStatus.right = true
+                break;
+        }
+    }
+
+    public dispatchKeyUp(keyup: CanvasKeyBoardEvent) {
+        switch (keyup.key) {
+            case 'ArrowUp':
+                this.moveStatus.up = false
+                break;
+            case 'ArrowDown':
+                this.moveStatus.down = false
+                break;
+            case 'ArrowLeft':
+                this.moveStatus.left = false
+                break;
+            case 'ArrowRight':
+                this.moveStatus.right = false
+                break;
+        }
     }
 
     public dispatchMouseMove(evt: CanvasMouseEvent): void {
@@ -29,7 +74,6 @@ export class LineDashAnimationApplication extends Canvas2DApplication {
     public dispatchMouseDown(evt: CanvasMouseEvent): void {
         if (this.isRunning()) {
             if (evt.button == 2) {
-                console.log('move here')
                 this.destVec = evt.canvasPosition
             }
         }
@@ -46,9 +90,10 @@ export class LineDashAnimationApplication extends Canvas2DApplication {
         // this.fillPatternRect(10, 10, this.canvas.width - 20, this.canvas.height - 20, 'no-repeat')
         this.strokeGrid()
         this.drawCanvasCoordCenter()
-        this.drawCoordInfo(`[${this._mouseX},${this._mouseY}]`, this._mouseX, this._mouseY)
-        this.deg = this.deg > 360 ? 0 : (this.deg + 1)
-        this.doTransform(this.deg)
+        // this.drawCoordInfo(`[${this._mouseX},${this._mouseY}]`, this._mouseX, this._mouseY)
+        // this.deg = this.deg > 360 ? 0 : (this.deg + 1)
+        // this.doTransform(this.deg)
+        this.doMouseTrack()
     }
 
     public doTransform(degree: number, rotateFirst: boolean = true): void {
@@ -79,35 +124,59 @@ export class LineDashAnimationApplication extends Canvas2DApplication {
         let radius: number = this.distance(0, 0, origin.x, origin.y)
         this.strokeCircle(0, 0, radius, 'black')
     }
+
+    private isCurMovePressing(): boolean {
+        return this.moveStatus.up || this.moveStatus.down || this.moveStatus.left || this.moveStatus.right
+    }
     public doMouseTrack(): void {
         if (this.context2D === null) return
         let width: number = 100
-        let height: number = 60
+        let height: number = 140
 
         this.context2D.save()
-        const curDistance: number = this.distanceVec(this.curVec, this.destVec)
-        if (curDistance !== 0) {
-            const sped: number = curDistance > 100 ? 4 : 1
-            if (this.curVec.x !== this.destVec.x) {
-                if (this.curVec.x > this.destVec.x) {
-                    this.curVec.x -= sped
-                } else {
-                    this.curVec.x += sped
-                }
+        // キーボード移動
+        if (this.isCurMovePressing()) {
+            if (this.moveStatus.up) {
+                this.curVec.y -= 4
             }
-
-            if (this.curVec.y !== this.destVec.y) {
-                if (this.curVec.y > this.destVec.y) {
-                    this.curVec.y -= sped
-                } else {
-                    this.curVec.y += sped
-                }
+            if (this.moveStatus.down) {
+                this.curVec.y += 2
             }
+            if (this.moveStatus.right) {
+                this.curVec.x += 2
+            }
+            if (this.moveStatus.left) {
+                this.curVec.x -= 2
+            }
+            this.destVec = this.curVec
         }
-        this.context2D.translate(this.curVec.x - (width * 0.5), this.curVec.y - (height * 0.5))
+        // 鼠标移动 マウス移動
+        else {
+            const curDistance: number = this.distanceVec(this.curVec, this.destVec)
+            if (curDistance !== 0) {
+                const sped: number = curDistance > 100 ? 4 : 1
+                if (this.curVec.x !== this.destVec.x) {
+                    if (this.curVec.x > this.destVec.x) {
+                        this.curVec.x -= sped
+                    } else {
+                        this.curVec.x += sped
+                    }
+                }
 
-        this.fillRect(0, 0, width, height, '#336655')
-        this.fillText('奎因王', (width * 0.5) - 15, (height * 0.5) - 5, 'white')
+                if (this.curVec.y !== this.destVec.y) {
+                    if (this.curVec.y > this.destVec.y) {
+                        this.curVec.y -= sped
+                    } else {
+                        this.curVec.y += sped
+                    }
+                }
+            }
+
+        }
+
+        this.context2D.translate(this.curVec.x - (width * 0.5), this.curVec.y - (height * 0.5))
+        this.context2D.drawImage(this._targetCanvas, 0, 0, width, height)
+        this.fillText('BeatMercy', (width * 0.5) - 15, (height * 0.5) - 45, 'Black')
 
         this.context2D.restore()
     }

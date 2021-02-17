@@ -38,7 +38,7 @@ export class Application implements EventListenerObject {
         this.isSupportMouseMove = false
         this._isMouseDown = false
 
-        canvas.oncontextmenu = canvas.oncontextmenu = function (ev) {
+        this.canvas.oncontextmenu = function (ev) {
             // 停止右键事件
             ev.preventDefault();
         }
@@ -137,7 +137,11 @@ export class Application implements EventListenerObject {
         this._requestId = window.requestAnimationFrame(this._elapseFunc.bind(this))
     }
 
-    // 抽象方法，可覆写 override
+    /**
+     * 抽象方法，可覆写 override 
+     * @param elapsedMsec 计算当前时间点与第一次调用step时间点的差，以毫秒为单位
+     * @param intervalSec 计算当前时间点与上一次调用step时间点的差/ms
+     */
     public update(elapsedMsec: number, intervalSec: number): void {
 
     }
@@ -255,9 +259,9 @@ export class Application implements EventListenerObject {
         let pos: vec2 = vec2.create(x, y)
 
         if (evt.type === 'mousedown') {
-            console.log('borderLeftWidth: : ' + borderLeftWidth + ' borderTopWidth: ' + borderTopWidth)
-            console.log('paddingLeft: : ' + paddingLeft + ' paddingTop: ' + paddingTop)
-            console.log('变换后的canvasPosition: ' + pos.toString())
+            // console.log('borderLeftWidth: : ' + borderLeftWidth + ' borderTopWidth: ' + borderTopWidth)
+            // console.log('paddingLeft: : ' + paddingLeft + ' paddingTop: ' + paddingTop)
+            // console.log('变换后的canvasPosition: ' + pos.toString())
         }
         return pos
     }

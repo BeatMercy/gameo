@@ -3,11 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" media="screen" href="main.css">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"
+          type="text/css"
+          media="screen"
+          href="main.css">
     <!-- <script defer src="main.js"></script> -->
     <script src="node_modules/systemjs/dist/system.js"></script>
     <script src="node_modules/typescript/lib/typescript.js"></script>
+    <script src="node_modules/vivus/dist/vivus.min.js"></script>
     <script>
         System.config({
             transpiler: 'typescript',
@@ -30,11 +35,18 @@
         <button id="stop">stop</button>
         <button id="trigger">trigger</button>
         <label for="rotateSpeed">Rotate Speed：</label>
-        <input type="text" name="rotateSpeed" id="rotateSpeed">
+        <input type="text"
+               name="rotateSpeed"
+               id="rotateSpeed">
         <label for="rotateSpeed">Image：</label>
-        <input type="file" name="imagefile" id="imagefile">
+        <input type="file"
+               name="imagefile"
+               id="imagefile">
     </div>
-    <canvas id="canvas" width="1600" height="1080"></canvas>
+    <canvas id="canvas"
+            tabindex="1"
+            width="1600"
+            height="1080"></canvas>
 </body>
 
 </html>
