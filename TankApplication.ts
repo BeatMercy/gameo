@@ -45,8 +45,13 @@ export class TankApplication extends Canvas2DApplication {
     public dispatchKeyPress(evt: CanvasKeyBoardEvent): void {
         this._tank.onKeyPress(evt)
     }
+    public dispatchMouseDown(evt: CanvasMouseEvent): void {
+        if (evt.button == 2) {
+            this._tank.onMouseMove(evt)
+        }
+    }
 
     public dispatchMouseMove(evt: CanvasMouseEvent) {
-        this._tank.onMouseMove(evt)
+        // this._tank.onMouseMove(evt)
     }
 }
