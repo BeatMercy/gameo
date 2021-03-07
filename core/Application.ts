@@ -49,6 +49,8 @@ export class Application implements EventListenerObject {
         return this._fps
     }
 
+    public pressingKeys: Array<CanvasKeyBoardEvent> = []
+
     // @override
     public handleEvent(evt: Event): void {
         switch (evt.type) {
@@ -69,13 +71,24 @@ export class Application implements EventListenerObject {
                 }
                 break
             case 'keypress':
-                this.dispatchKeyPress(this._toCanvasKeyBoardEvent(evt))
+                this.dispatchKeyPress(this._toCanvasKeyBoardEvent(evt), this.pressingKeys)
                 break
             case 'keydown':
-                this.dispatchKeyDown(this._toCanvasKeyBoardEvent(evt))
+                const cEvt = this._toCanvasKeyBoardEvent(evt)
+                if (this.pressingKeys.filter(k => cEvt.keyCode === k.keyCode).length == 0) {
+                    this.pressingKeys.push(cEvt)
+                }
+                this.dispatchKeyDown(cEvt)
                 break
             case 'keyup':
-                this.dispatchKeyUp(this._toCanvasKeyBoardEvent(evt))
+                const cEvt2 = this._toCanvasKeyBoardEvent(evt)
+                for (let i = 0; i < this.pressingKeys.length; i++) {
+                    if (cEvt2.keyCode === this.pressingKeys[i].keyCode) {
+                        this.pressingKeys.splice(i, 1)
+                        break
+                    }
+                }
+                this.dispatchKeyUp(cEvt2)
                 break
         }
 
@@ -215,7 +228,8 @@ export class Application implements EventListenerObject {
         return
     }
 
-    protected dispatchKeyPress(evt: CanvasKeyBoardEvent): void {
+    protected dispatchKeyPress(evt: CanvasKeyBoardEvent,
+        curPressingKeys: Array<CanvasKeyBoardEvent>): void {
         return
     }
 
@@ -234,8 +248,9 @@ export class Application implements EventListenerObject {
 
         let rect: ClientRect = this.canvas.getBoundingClientRect()
         if (evt.type === 'mousedown') {
-            console.log('boundingClientRect: ' + JSON.stringify(rect))
-            console.log('ClientX: ' + evt.clientX + ' ClientY: ' + evt.clientY)
+            // 转换的坐标值
+            // console.log('boundingClientRect: ' + JSON.stringify(rect))
+            // console.log('ClientX: ' + evt.clientX + ' ClientY: ' + evt.clientY)
         }
 
         let borderLeftWidth: number = 0

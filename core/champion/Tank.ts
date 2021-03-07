@@ -1,7 +1,8 @@
 import { Canvas2DApplication } from "../Canvas2DApplication"
 import { CanvasKeyBoardEvent } from "../event/CanvasKeyBoardEvent"
 import { CanvasMouseEvent } from "../event/CanvasMouseEvent"
-import { Math2D } from "../math2d"
+import { Math2D, vec2 } from "../math2d"
+import CannonBall from "./CannonBall"
 
 // 戦車　せんしゃ
 export class Tank {
@@ -32,6 +33,8 @@ export class Tank {
 
     public linerSpeed: number = 100
     public turretRotateSpeed: number = Math2D.toRadian(4)
+
+    private cannonBalls: Array<CannonBall> = []
 
     public draw(app: Canvas2DApplication) {
         if (app.context2D == null) {
@@ -94,10 +97,15 @@ export class Tank {
             app.context2D.restore()
         }
         app.context2D.restore()
+
+        // 绘制炮弹
+        this.cannonBalls.forEach(ball => ball.draw(app))
+
     }
 
     public update(intervalSec: number): void {
         this._moveTowardTo(intervalSec)
+        this.cannonBalls.forEach(ball => ball.update(intervalSec))
     }
 
     public onMouseMove(evt: CanvasMouseEvent): void {
@@ -106,14 +114,34 @@ export class Tank {
         this._lootAt()
     }
 
-    public onKeyPress(evt: CanvasKeyBoardEvent): void {
-        if (evt.key === 'a') {
-            this.turretRotation -= this.turretRotateSpeed
-        } else if (evt.key === 'd') {
-            this.turretRotation += this.turretRotateSpeed
-        } else if (evt.key === 'r') {
-            this.turretRotation = 0
+    public onKeyPress(evt: CanvasKeyBoardEvent, pressingKeys: Array<CanvasKeyBoardEvent>): void {
+        pressingKeys.forEach(keyEvt => {
+            if (keyEvt.key === 'a') {
+                this.turretRotation -= this.turretRotateSpeed
+            } else if (keyEvt.key === 'd') {
+                this.turretRotation += this.turretRotateSpeed
+            } else if (keyEvt.key === 'r') {
+                this.turretRotation = 0
+            } else if (keyEvt.key === 's') {
+                this.targetX = this.x
+                this.targetY = this.y
+            } else if (keyEvt.key === ' ') {
+                this._fireCannonBall()
+            }
+        })
+
+    }
+    private _fireCannonBall() {
+        const mixRotation = this.tankRotation + this.turretRotation
+        const fireY = this.y + (Math.sin(mixRotation) * this.gunLength) * this.scaleY
+        const fireX = this.x + (Math.cos(mixRotation) * this.gunLength) * this.scaleX
+
+        let cannonBall = new CannonBall(new vec2(fireX, fireY), (this.scaleX + this.scaleY) / 2, mixRotation)
+        cannonBall.id = this.cannonBalls.length + parseInt((Math.random() * 1500).toFixed(0))
+        cannonBall.onDestory = () => {
+            this.cannonBalls = this.cannonBalls.filter(ball => ball.id !== cannonBall.id)
         }
+        this.cannonBalls.push(cannonBall)
     }
 
     private _lootAt() {

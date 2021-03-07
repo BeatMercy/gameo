@@ -42,8 +42,8 @@ export class TankApplication extends Canvas2DApplication {
         this._tank.update(intervalSec)
     }
 
-    public dispatchKeyPress(evt: CanvasKeyBoardEvent): void {
-        this._tank.onKeyPress(evt)
+    public dispatchKeyPress(evt: CanvasKeyBoardEvent, pressingKeys: Array<CanvasKeyBoardEvent>): void {
+        this._tank.onKeyPress(evt, pressingKeys)
     }
     public dispatchMouseDown(evt: CanvasMouseEvent): void {
         if (evt.button == 2) {
