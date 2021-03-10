@@ -13,8 +13,8 @@ export class TankApplication extends Canvas2DApplication {
         this._tank = new Tank()
         this._tank.targetX = this._tank.x = canvas.width * 0.5
         this._tank.targetY = this._tank.y = canvas.height * 0.5
-        this._tank.scaleX = 2
-        this._tank.scaleY = 2
+        this._tank.scaleX = 1
+        this._tank.scaleY = 1
 
         this._tank.showCoord = false
     }
@@ -38,8 +38,8 @@ export class TankApplication extends Canvas2DApplication {
         this.drawTank()
     }
 
-    public update(elapsedMsec: number, intervalSec: number): void {
-        this._tank.update(intervalSec)
+    public update(elapsedMsec: number, intervalSec: number, pressingKeys: Array<CanvasKeyBoardEvent>): void {
+        this._tank.update(intervalSec,pressingKeys)
     }
 
     public dispatchKeyPress(evt: CanvasKeyBoardEvent, pressingKeys: Array<CanvasKeyBoardEvent>): void {

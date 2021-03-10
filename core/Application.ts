@@ -23,6 +23,7 @@ export class Application implements EventListenerObject {
 
     public canvas: HTMLCanvasElement;
 
+    public pressingKeys: Array<CanvasKeyBoardEvent> = []
 
     public constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
@@ -49,7 +50,6 @@ export class Application implements EventListenerObject {
         return this._fps
     }
 
-    public pressingKeys: Array<CanvasKeyBoardEvent> = []
 
     // @override
     public handleEvent(evt: Event): void {
@@ -145,7 +145,7 @@ export class Application implements EventListenerObject {
         this._handleTimers(intervalSec)
 
         // console.log(" elapsedTime = " + elapsedMsec + " intervalSec = " + intervalSec)
-        this.update(elapsedMsec, intervalSec)
+        this.update(elapsedMsec, intervalSec, this.pressingKeys)
         this.render()
         this._requestId = window.requestAnimationFrame(this._elapseFunc.bind(this))
     }
@@ -155,7 +155,7 @@ export class Application implements EventListenerObject {
      * @param elapsedMsec 计算当前时间点与第一次调用step时间点的差，以毫秒为单位
      * @param intervalSec 计算当前时间点与上一次调用step时间点的差/ms
      */
-    public update(elapsedMsec: number, intervalSec: number): void {
+    public update(elapsedMsec: number, intervalSec: number, pressingKeys: Array<CanvasKeyBoardEvent>): void {
 
     }
 

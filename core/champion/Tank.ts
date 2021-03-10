@@ -48,7 +48,7 @@ export class Tank {
 
         // 描画（びょうが）坦克底座 
         app.context2D.save()
-        app.context2D.fillStyle = 'grey'
+        app.context2D.fillStyle = '#373336'
         app.context2D.beginPath()
         if (this.initYAxis) {
             app.context2D.rect(-this.height * 0.5, -this.width * 0.5, this.height, this.width)
@@ -70,12 +70,12 @@ export class Tank {
         // 绘制炮口
         app.context2D.save()
         app.context2D.rotate(this.turretRotation)
-        app.context2D.fillStyle = 'red'
+        app.context2D.fillStyle = '#5a5459'
         app.context2D.beginPath()
         app.context2D.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2) // 类椭圆绘制
         app.context2D.fill()
 
-        app.context2D.strokeStyle = 'blue'
+        app.context2D.strokeStyle = '#684649'
         app.context2D.lineWidth = 5
         app.context2D.lineCap = 'round'
         app.context2D.beginPath()
@@ -103,9 +103,10 @@ export class Tank {
 
     }
 
-    public update(intervalSec: number): void {
+    public update(intervalSec: number, pressingKeys: Array<CanvasKeyBoardEvent>): void {
         this._moveTowardTo(intervalSec)
         this.cannonBalls.forEach(ball => ball.update(intervalSec))
+        this.onKeyPress(pressingKeys[0], pressingKeys)
     }
 
     public onMouseMove(evt: CanvasMouseEvent): void {
