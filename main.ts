@@ -3,7 +3,7 @@ import { Canvas2DApplication } from './core/Canvas2DApplication'
 import ResourceUtil from './core/util/ResourceUtil'
 import { LineDashAnimationApplication } from './LineDashAnimationApplication'
 import { TankApplication } from './TankApplication'
-import { RotateAndRevolutionTest } from './RotateAndRevolutionTest'
+import { Visualizer } from './core/sound/Sound'
 
 let canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement
 if (canvas === null) {
