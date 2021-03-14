@@ -22,7 +22,6 @@ export class TankApplication extends Canvas2DApplication {
         this._tank.showCoord = false
 
         this._visual = new Visualizer()
-        this._visual.prepareAPI()
         this._fileInput = document.getElementById('imagefile') as HTMLInputElement
         this._fileInput.onchange = (e: Event): any => {
             if (!this._fileInput.files || this._fileInput.files.length == 0) return
