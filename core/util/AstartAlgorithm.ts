@@ -2,9 +2,8 @@ import { Math2D, vec2 } from "../math2d"
 
 export default class AstarAlgorithm {
     public sourceMap: Array<Array<number>>  // 二维地图数字数组
-    public pathMap: Array<Array<number>> // sourceMap钟的路径，标识路径经过的点
-    public COST_OF_STRAIGHT: number = 10
-    public COST_OF_SKEW: number = 15
+    public COST_OF_STRAIGHT: number = 20
+    public COST_OF_SKEW: number = 2
     public pathChain: Array<vec2>
 
     public startPos: vec2
@@ -12,20 +11,21 @@ export default class AstarAlgorithm {
 
     constructor(sourceMap: Array<Array<number>>) {
         this.sourceMap = sourceMap
-        this.pathMap = this.sourceMap
     }
 
     public caculatePathChain(): Array<vec2> {
         const pathChain: Array<PathNode> = []
+        const pathMap: Array<Array<number>> = JSON.parse(JSON.stringify(this.sourceMap))// sourceMap钟的路径，标识路径经过的点 
         let curPos = this.startPos
-        while (curPos.x !== this.endPos.x && curPos.y !== this.endPos.y) {
+        while (curPos.x !== this.endPos.x || curPos.y !== this.endPos.y) {
             const curPathNodes = this.surPathNode(curPos)
-                .filter(n => this.isPosInMap(n.pos))
+                .filter(n => this.isPosInMap(n.pos) && !pathMap[n.pos.y][n.pos.x])// 路径地图未标识
             if (curPathNodes.length == 0) break
             curPathNodes.forEach(n => n.buildCost(curPos, this.COST_OF_STRAIGHT))
             // 获得F最少的点作为下一步落脚点
             const nextNode = curPathNodes.reduce((pre, cur) => cur.f < pre.f ? cur : pre)
             pathChain.push(nextNode)
+            pathMap[nextNode.pos.y][nextNode.pos.x] = -1
             curPos = nextNode.pos
         }
         return pathChain.map(p => p.pos)
@@ -56,9 +56,8 @@ export default class AstarAlgorithm {
 
     private isPosInMap(pos: vec2): boolean {
         return pos.y > 0 && pos.y < this.sourceMap.length
-            && pos.x > 0 && pos.x < this.sourceMap[pos.x].length
+            && pos.x > 0 && pos.x < this.sourceMap[pos.y].length
             && this.sourceMap[pos.y][pos.x] !== 1 // 地图不为墙
-            && !this.pathMap[pos.y][pos.x] // 路径地图未标识
     }
 
 }

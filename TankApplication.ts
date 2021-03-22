@@ -2,8 +2,9 @@ import { Canvas2DApplication } from "./core/Canvas2DApplication";
 import { Tank } from "./core/champion/Tank";
 import { CanvasKeyBoardEvent } from "./core/event/CanvasKeyBoardEvent";
 import { CanvasMouseEvent } from "./core/event/CanvasMouseEvent";
-import { Math2D } from "./core/math2d";
+import { Math2D, vec2 } from "./core/math2d";
 import { Visualizer } from "./core/sound/Sound";
+import AstarAlgorithm from "./core/util/AStartAlgorithm";
 
 export class TankApplication extends Canvas2DApplication {
     private _tank: Tank
@@ -28,6 +29,18 @@ export class TankApplication extends Canvas2DApplication {
             this._visual.file = this._fileInput.files[0]
             this._visual.start()
         }
+        const algor = new AstarAlgorithm([
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 1, 1, 1, 1, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        ])
+        algor.startPos = new vec2(1, 1)
+        algor.endPos = new vec2(9, 1)
+        console.log('algor.sourceMap', algor.sourceMap.map((l, y) => l.map((v, x) => v ? ('  ' + v + '   ') : `(${x},${y})`)))
+        console.log('pathChain', algor.caculatePathChain().map(v => `(${v.x},${v.y})`).join('->'))
 
     }
 
