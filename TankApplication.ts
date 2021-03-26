@@ -4,7 +4,7 @@ import { CanvasKeyBoardEvent } from "./core/event/CanvasKeyBoardEvent";
 import { CanvasMouseEvent } from "./core/event/CanvasMouseEvent";
 import { Math2D, vec2 } from "./core/math2d";
 import { Visualizer } from "./core/sound/Sound";
-import AstarAlgorithm from "./core/util/AStartAlgorithm";
+import AstarAlgorithm from "./core/util/AstartAlgorithm";
 
 export class TankApplication extends Canvas2DApplication {
     private _tank: Tank
@@ -30,17 +30,35 @@ export class TankApplication extends Canvas2DApplication {
             this._visual.start()
         }
         const algor = new AstarAlgorithm([
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 1, 1, 1, 1, 0, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            //   0  1  2  3  4  5  6  7  8  9  
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],// 0
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],// 1
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],// 2
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],// 3
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],// 4 
+            [0, 1, 0, 0, 1, 0, 0, 0, 0, 0],// 5
+            [0, 0, 1, 1, 1, 0, 0, 0, 0, 0],// 6
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],// 7
         ])
-        algor.startPos = new vec2(1, 1)
-        algor.endPos = new vec2(9, 1)
-        console.log('algor.sourceMap', algor.sourceMap.map((l, y) => l.map((v, x) => v ? ('  ' + v + '   ') : `(${x},${y})`)))
-        console.log('pathChain', algor.caculatePathChain().map(v => `(${v.x},${v.y})`).join('->'))
+        algor.startPos = new vec2(3, 7)
+        algor.endPos = new vec2(5, 7)
+        const pathchain = algor.caculatePathChain()
+        console.log('algor.sourceMap', algor.sourceMap.map((l, y) =>
+            l.map((v, x) => {
+                if (algor.startPos.y === y && algor.startPos.x === x) {
+                    return 'start'
+                } else if (algor.endPos.y === y && algor.endPos.x === x) {
+                    return 'enddd'
+                }
+                const theIdx = pathchain.findIndex((p) => p.x === x && p.y === y)
+                if (theIdx !== -1) {
+                    pathchain[theIdx]
+                    return 'Pa[' + theIdx + ']'
+                }
+                return v ? ('  ' + v + '   ') : `(${x},${y})`
+            })
+        ))
+        console.log('pathChain', pathchain.map(v => `(${v.x},${v.y})`).join('->'))
 
     }
 
