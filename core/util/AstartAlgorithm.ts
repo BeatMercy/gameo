@@ -29,38 +29,68 @@ export default class AstarAlgorithm {
 
         const startNode = new PathNode()
         startNode.pos = this.startPos
-        startNode.f = 0
-        openList.push(startNode) // 添加起点到openList
 
-        let curPos = this.startPos
+        closeList.push(startNode) // 添加起点到openList
+
+        let curNode = startNode
+        let curPos = curNode.pos
         while (curPos.x !== this.endPos.x || curPos.y !== this.endPos.y) {
-            const curPathNodes = this.surPathNode(curPos)
+            const curPathNodes = this.surPathNode(curNode)
                 .filter(n => this.isPosInMap(n.pos))// 路径地图未标识
-            let spliceIndex = -1
-            openList.find((e, i) => {
-                if (e.pos.x === curPos.x && e.pos.y === curPos.y) {
-                    spliceIndex = i
-                    return true
-                }
-                return false
-            })
-            openList.splice(spliceIndex, 1)
-
-            if (curPathNodes.length == 0) break
             curPathNodes.forEach(n => n.buildCost(this.endPos, this.COST_OF_STRAIGHT))
-            // 获得F最少的点作为下一步落脚点
-            const nextNode = curPathNodes.reduce((pre, cur) => cur.f < pre.f ? cur : pre)
-            curPos = nextNode.pos
+            if (curPathNodes.length == 0) break
+
+            // 加入 openlist
+            curPathNodes.forEach((node: PathNode) => {
+                const inCloseNode = closeList.find((n) => n.pos.x === node.pos.x && n.pos.y === node.pos.y)
+                if (inCloseNode) return  // close list 中的节点不处理
+
+                const inOpenNode = openList.find((n) => n.pos.x === node.pos.x && n.pos.y === node.pos.y)
+                if (!inOpenNode) {
+                    openList.push(node)
+                } else if (inOpenNode.g > curNode.g) {
+                    // 若原节点的g值大于当前节点，替换旧的节点父亲节点
+                    inOpenNode.parent = curNode
+                }
+            })
+
+            // 从 open list 中选择下一个待处理的方格, 获得F最少的点作为下一步落脚点
+            if (openList.length === 0) { break }
+            if (openList.length === 1) {
+                const nextNode = openList.splice(0, 1)[0]
+                closeList.push(nextNode)
+                curNode = nextNode
+                curPos = curNode.pos
+            } else {
+                let spliceIndex = 0
+                const nextNode = openList.reduce((pre, cur, curIdx) => {
+                    if (cur.f < pre.f) {
+                        spliceIndex = curIdx
+                        return cur
+                    }
+                    return pre
+                })
+                closeList.push(openList.splice(spliceIndex, 1)[0])
+                curNode = nextNode
+                curPos = curNode.pos
+            }
         }
-        return []
+        const paths = new Array<PathNode>()
+        while (curNode.parent) {
+            paths.unshift(curNode.parent)
+            curNode = curNode.parent
+        }
+        return paths.map(n => n.pos)
     }
 
-    private surPathNode(pos: vec2): Array<PathNode> {
+    private surPathNode(parentNode: PathNode): Array<PathNode> {
+        const pos = parentNode.pos
         return Object.keys(this.dirs).map((k) => {
             const pathNode = new PathNode()
             pathNode.pos = new vec2(pos.x + this.dirs[k].x, pos.y + this.dirs[k].y)
+            pathNode.parent = parentNode
             if (/[A-Z]+/.test(k))
-                pathNode.g = this.COST_OF_SKEW// 斜角
+                pathNode.g = this.COST_OF_SKEW//?斜角
             else
                 pathNode.g = this.COST_OF_STRAIGHT
             return pathNode
@@ -72,7 +102,6 @@ export default class AstarAlgorithm {
             && pos.x >= 0 && pos.x < this.sourceMap[pos.y].length
             && this.sourceMap[pos.y][pos.x] !== 1 // 地图不为墙
     }
-
 }
 
 class PathNode {
@@ -87,7 +116,6 @@ class PathNode {
             straightCost * (Math.abs(this.pos.x - endPos.x) + Math.abs(this.pos.y - endPos.y))
         this.f = this.g + this.h
     }
-
-
 }
+
 
