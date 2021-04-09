@@ -1,4 +1,3 @@
-
 export default class ImageUtil {
 
     public static canvasToDataURL(
@@ -34,9 +33,9 @@ export default class ImageUtil {
     }
 
     // canvas转image
-    public static canvasToImage(canvas: HTMLCanvasElement) {
+    public static canvasToImage(canvas: HTMLCanvasElement, mimeType?: string) {
         var img = new Image()
-        img.src = canvas.toDataURL('image/jpeg', 1.0)
+        img.src = canvas.toDataURL(mimeType || 'image/jpeg', 1.0)
         return img
     }
 
@@ -61,6 +60,39 @@ export default class ImageUtil {
         return new Blob([u8arr], { type: mime })
     }
 
+    public static canvasToArrayBuffer(canvas: HTMLCanvasElement): ArrayBuffer | undefined {
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return undefined
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        return imgData.data.buffer
+    }
+
+    /**
+     * 
+     * @param uints RGBA to Gray: Y <- 0.299 * R + 0.587 * G + 0.114 * B
+     *  Gray to RGBA: R <- Y, G <- Y, B <- Y, A <- 255
+     * 我们可以得出RGBA to GRAY（指的是拥有4个通道）对应映射关系应该为： 
+     * RGBA to RGBA(GRAY): R1 = G1 = B1 <-  0.299 * R + 0.587 * G + 0.114 * B , A1 <- A
+     */
+    public static uintsRGBA2Grey(uints: Uint8Array, width: number, height: number) {
+        const nextUints = new Uint8Array(uints.length)
+        for (let iY = 0; iY < height; iY++) {
+            for (let iX = 0; iX < (width * 4); iX += 4) {
+                const curPixelIdx = (iY * width * 4) + iX
+                const { uR, uG, uB, uA } = {
+                    uR: uints[curPixelIdx],
+                    uG: uints[curPixelIdx + 1],
+                    uB: uints[curPixelIdx + 2],
+                    uA: uints[curPixelIdx + 3]
+                }
+                nextUints[curPixelIdx + 3] = uA
+                nextUints[curPixelIdx] = nextUints[curPixelIdx + 1] = nextUints[curPixelIdx + 2]
+                    = 0.299 * uR + 0.587 * uG + 0.114 * uB
+            }
+        }
+        return nextUints
+    }
+
     public static dataURLToUint8Array(dataurl: string): Uint8Array {
         var arr = dataurl.split(',')
         var bstr = atob(arr[1])
@@ -71,6 +103,8 @@ export default class ImageUtil {
         }
         return u8arr
     }
+
+
     // Blob转image
     public static blobToImage(blob: Blob, cb: (target: any) => void) {
         ImageUtil.fileOrBlobToDataURL(blob, function (dataurl: string) {
@@ -112,6 +146,5 @@ export default class ImageUtil {
         img.src = dataurl
         return img
     }
-
 
 }

@@ -19,9 +19,9 @@ function timerCallback(id: number, data: string): void {
 }
 
 
-ResourceUtil.loadImageAsCanvas('/assets/logo.jpg')
+ResourceUtil.loadImageAsCanvas('/assets/map.png')
     .then(target => {
-        let app: Canvas2DApplication = new TankApplication(canvas)
+        let app: Canvas2DApplication = new TankApplication(canvas, target)
 
         let app2: Canvas2DApplication = new LineDashAnimationApplication(canvas, target)
         app.render()

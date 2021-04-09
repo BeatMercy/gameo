@@ -23,7 +23,17 @@ export default class AstarAlgorithm {
         this.sourceMap = sourceMap
     }
 
-    public caculatePathChain(): Array<vec2> {
+    public caculateVecChain(): Array<vec2> {
+        let endLeaf = this.caculateEndPathLeaf()
+        const paths = new Array<PathNode>()
+        while (endLeaf.parent) {
+            paths.unshift(endLeaf.parent)
+            endLeaf = endLeaf.parent
+        }
+        return paths.map(n => n.pos)
+    }
+    
+    public caculateEndPathLeaf(): PathNode {
         const openList: Array<PathNode> = []
         const closeList: Array<PathNode> = []
 
@@ -75,12 +85,8 @@ export default class AstarAlgorithm {
                 curPos = curNode.pos
             }
         }
-        const paths = new Array<PathNode>()
-        while (curNode.parent) {
-            paths.unshift(curNode.parent)
-            curNode = curNode.parent
-        }
-        return paths.map(n => n.pos)
+        
+        return curNode;
     }
 
     private surPathNode(parentNode: PathNode): Array<PathNode> {
