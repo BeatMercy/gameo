@@ -3,10 +3,20 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Condition {
 
     public static void main(String[] args) {
+
+        if (true) {
+            String tql = "emsname is \"asd\" and ( alarmname is \"Jasdlkj\" or "
+                    + "(envtype is 'qwe' and emsname is \"asd\") or alarmname is \"ddddd\" ) and envname is \"asdasd\"";
+            Condition cod = parseFromWhereTql(tql);
+            System.out.println(cod.toString());
+            return;
+        }
+
         List<Condition> conds = Arrays.asList(
                 getNewCondition(),
                 getNewCondition(),
@@ -95,21 +105,25 @@ public class Condition {
     /**
      * emsname is "asd" and ( alarmname is "Jasdlkj" or (envtype is 'qwe' and emsname is "asd") or alarmname is "ddddd" ) and envname is "asdasd"
      */
-    public Condition parseFromWhereTql(String conditionStr) throws RuntimeException {
+    public static Condition parseFromWhereTql(String conditionStr) throws RuntimeException {
         if (conditionStr.trim().startsWith("(")) {
             // 去除最外层括号
-            conditionStr = conditionStr.trim().substring(1, conditionStr.lastIndexOf(")"));
+            int rightB = conditionStr.lastIndexOf(")");
+            if (rightB == -1) {
+                conditionStr = conditionStr.trim().substring(1);
+            } else {
+                conditionStr = conditionStr.trim().substring(1, rightB);
+            }
         }
         // 括号检测
         // and or 链接词
-        boolean orConnect = true;
         int andIdx = kmpSearch(conditionStr, " and ");
         int orIdx = kmpSearch(conditionStr, " or ");
 
         // 无and/or语句
         if (andIdx == -1 && orIdx == -1) {
             return parseToExpression(conditionStr);
-        } else if (orIdx == -1 || andIdx < orIdx) {
+        } else if (orIdx == -1 || (andIdx != -1 && andIdx < orIdx)) {
             // Condition andPart1 = parseFromWhereTql(conditionStr.substring(0, andIdx + 1));
             // Condition andPart2 = parseFromWhereTql(conditionStr.substring(andIdx + 5, conditionStr.length()));
 
@@ -119,23 +133,25 @@ public class Condition {
             while (andIdx != -1) {
                 Condition andPart = parseFromWhereTql(conditionStr.substring(starIdx, andIdx + 1));
                 ands.add(andPart);
-                orIdx = kmpSearch(conditionStr.substring(andIdx + 5), " and ");
-                starIdx = orIdx + 5;
+
+                conditionStr = conditionStr.substring(andIdx + 5);
+                andIdx = kmpSearch(conditionStr, " and ");
                 if (orIdx != -1 && orIdx < andIdx) {
                     break;
                 }
             }
 
             return new Condition().buildAndConditions(ands);
-        } else if (andIdx == -1 || orIdx < andIdx) {
+        } else if (andIdx == -1 || (orIdx != -1 && orIdx < andIdx)) {
             // 不断寻找下一个or，直到 andIdx !=-1 || andIdx < orIdx || orIdx == -1
             List<Condition> ors = new ArrayList<>();
             int starIdx = 0;
             while (orIdx != -1) {
                 Condition orPart = parseFromWhereTql(conditionStr.substring(starIdx, orIdx + 1));
                 ors.add(orPart);
-                orIdx = kmpSearch(conditionStr.substring(orIdx + 4), " or ");
-                starIdx = orIdx + 4;
+
+                conditionStr = conditionStr.substring(orIdx + 4);
+                orIdx = kmpSearch(conditionStr, " or ");
                 if (andIdx != -1 && andIdx < orIdx) {
                     break;
                 }
@@ -146,25 +162,30 @@ public class Condition {
         return null;
     }
 
-    private Condition parseToExpression(String expressionText) {
+    private static Condition parseToExpression(String expressionText) {
         // 单个表达式内部，必须符合 fieldname is/in/contains value 格式，存在多个或者格式不匹配都视为异常
         // [is is not, in, not in, contains, not contains] 条件词判断
-        if (expressionText.contains(" is ")) {
-
-        } else if (expressionText.contains(" is not ")) {
-        } else if (expressionText.contains(" in ")) {
-        } else if (expressionText.contains(" not in ")) {
-        } else if (expressionText.contains(" contains ")) {
-        } else if (expressionText.contains(" not contains ")) {
-        }
+        String key = "";
+        String field = "";
+        String value = "";
+        String trim = expressionText.trim();
+        List<String> keys = Arrays.asList(" is ", " is not ",
+                " in ", " not in ",
+                " contains ", " not contains ");
+        List<String> matchedKeys = keys.stream().filter(k -> trim.contains(k))
+                .collect(Collectors.toList());
+        String theKey = matchedKeys.get(0);
+        key = theKey.trim();
+        field = trim.substring(0, trim.indexOf(theKey));
+        value = trim.substring(trim.indexOf(theKey) + theKey.length());
         return new Condition()
-                .buildConditionField("")
-                .buildConditionKey("conditionKey")
-                .buildConditionValue("conditionValue");
+                .buildConditionField(field)
+                .buildConditionKey(key)
+                .buildConditionValue(value);
     }
 
     // kmp 字符匹配算法
-    private int kmpSearch(String srcText, String patText) {
+    private static int kmpSearch(String srcText, String patText) {
         int[] next = new int[patText.length()];
 
         int statusIndex = 0;
